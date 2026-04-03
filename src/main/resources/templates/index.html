@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLP Entity Extractor</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            width: 100%;
+            max-width: 560px;
+            padding: 36px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #5b5ef4, #818cf8);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e1e2e;
+        }
+        .logo-text span { color: #5b5ef4; }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #9098b1;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: #f7f8fc;
+            border: 1.5px solid #e4e7f0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: #1e1e2e;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        textarea::placeholder { color: #b0b8cc; }
+        textarea:focus {
+            border-color: #5b5ef4;
+            box-shadow: 0 0 0 3px rgba(91,94,244,0.1);
+            background: #fff;
+        }
+
+        .divider { height: 1px; background: #f0f2f8; margin: 22px 0; }
+
+        .type-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 22px;
+        }
+        .type-grid input { display: none; }
+        .type-grid label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 12px;
+            background: #f7f8fc;
+            border: 1.5px solid #e4e7f0;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #5a6280;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-weight: 500;
+        }
+        .type-grid label .ic { font-size: 15px; }
+        .type-grid label:hover { border-color: #a5a8f8; background: #f2f3ff; color: #3c3fc4; }
+        .type-grid input:checked + label {
+            border-color: #5b5ef4;
+            background: #eef0ff;
+            color: #4043d1;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            background: #5b5ef4;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+        }
+        .btn:hover { background: #4547e0; box-shadow: 0 4px 16px rgba(91,94,244,0.3); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { background: #a5a8f8; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .spinner {
+            width: 15px; height: 15px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.65s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-section { margin-top: 22px; }
+        .result-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .count-pill {
+            font-size: 11px;
+            font-weight: 600;
+            color: #5b5ef4;
+            background: #eef0ff;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f2ff;
+            border: 1px solid #d0d4f8;
+            color: #4043d1;
+            padding: 6px 13px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        .tag::before { content: '•'; opacity: 0.5; font-size: 10px; }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.88); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .empty { color: #9098b1; font-size: 13px; text-align: center; padding: 18px 0; }
+
+        .error-box {
+            margin-top: 14px;
+            padding: 11px 14px;
+            background: #fff4f4;
+            border: 1px solid #fcd0d0;
+            border-radius: 10px;
+            color: #c0392b;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+
+    <div class="logo">
+        <div class="logo-icon">🔍</div>
+        <div class="logo-text">NLP <span>Extractor</span></div>
+    </div>
+
+    <p class="section-label">Input Text</p>
+    <textarea id="text" placeholder="e.g. Apple CEO Tim Cook met with Elon Musk in San Francisco…"></textarea>
+
+    <div class="divider"></div>
+
+    <p class="section-label">Entity Type</p>
+    <div class="type-grid">
+        <input type="radio" name="etype" id="e-person" value="PERSON" checked>
+        <label for="e-person"><span class="ic">👤</span> Person</label>
+
+        <input type="radio" name="etype" id="e-city" value="CITY">
+        <label for="e-city"><span class="ic">🏙️</span> City</label>
+
+        <input type="radio" name="etype" id="e-country" value="COUNTRY">
+        <label for="e-country"><span class="ic">🌍</span> Country</label>
+
+        <input type="radio" name="etype" id="e-state" value="STATE_OR_PROVINCE">
+        <label for="e-state"><span class="ic">📍</span> State</label>
+
+        <input type="radio" name="etype" id="e-email" value="EMAIL">
+        <label for="e-email"><span class="ic">✉️</span> Email</label>
+
+        <input type="radio" name="etype" id="e-title" value="TITLE">
+        <label for="e-title"><span class="ic">🏷️</span> Title</label>
+    </div>
+
+    <button class="btn" id="btn" onclick="extract()">
+        <span class="spinner" id="spinner"></span>
+        <span id="btnLabel">Extract Entities</span>
+    </button>
+
+    <div id="errorBox"></div>
+    <div id="resultSection"></div>
+
+</div>
+
+<script>
+    async function extract() {
+        const text = document.getElementById("text").value.trim();
+        const type = document.querySelector('input[name="etype"]:checked').value;
+        const btn = document.getElementById("btn");
+        const spinner = document.getElementById("spinner");
+        const btnLabel = document.getElementById("btnLabel");
+        const errorBox = document.getElementById("errorBox");
+        const resultSection = document.getElementById("resultSection");
+
+        errorBox.innerHTML = "";
+        resultSection.innerHTML = "";
+
+        if (!text) {
+            errorBox.innerHTML = `<div class="error-box">⚠️ Please enter some text first.</div>`;
+            return;
+        }
+
+        btn.disabled = true;
+        spinner.style.display = "block";
+        btnLabel.textContent = "Extracting…";
+
+        try {
+            const res = await fetch(`http://localhost:8080/api/v1/ner?type=${type}`, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: text
+            });
+
+            if (!res.ok) throw new Error("Server error " + res.status);
+
+            const data = await res.json();
+
+            if (!data.length) {
+                resultSection.innerHTML = `<div class="result-section"><div class="empty">No entities found for this type.</div></div>`;
+                return;
+            }
+
+            const tags = data.map((item, i) =>
+                `<span class="tag" style="animation-delay:${i*0.05}s">${esc(item)}</span>`
+            ).join('');
+
+            resultSection.innerHTML = `
+        <div class="result-section">
+          <div class="result-header">
+            <span class="section-label" style="margin:0">Results</span>
+            <span class="count-pill">${data.length} found</span>
+          </div>
+          <div class="tags">${tags}</div>
+        </div>`;
+
+        } catch (e) {
+            errorBox.innerHTML = `<div class="error-box">⚠️ Could not connect to the API. Is the server running?</div>`;
+        } finally {
+            btn.disabled = false;
+            spinner.style.display = "none";
+            btnLabel.textContent = "Extract Entities";
+        }
+    }
+
+    function esc(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    document.getElementById("text").addEventListener("keydown", e => {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) extract();
+    });
+</script>
+</body>
+</html>
