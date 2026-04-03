@@ -27,10 +27,10 @@ public class NERController {
         CoreDocument document = new CoreDocument(input);
         stanfordCoreNLP.annotate(document);
         List<CoreLabel> coreLabels = document.tokens();
-        return new HashSet<>(collectList(coreLabels,type));
+        return new HashSet<>(collectList(coreLabels, type));
     }
 
-    private List<String> collectList (List<CoreLabel> coreLabels,final Type type) {
+    private List<String> collectList(List<CoreLabel> coreLabels, final Type type) {
 
         return coreLabels
                 .stream()

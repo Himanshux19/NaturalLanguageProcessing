@@ -9,7 +9,7 @@ import java.util.Properties;
 @Service
 public class Pipeline {
     private static final Properties properties;
-    private static final String propertiesName = "tokenize,ssplit,pos,lemma,ner,sentiment,parse";
+    private static final String propertiesName = "tokenize,ssplit,pos,lemma,ner,parse,sentiment";
     private static StanfordCoreNLP stanfordCoreNLP;
 
     static {
