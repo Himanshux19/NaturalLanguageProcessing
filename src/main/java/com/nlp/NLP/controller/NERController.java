@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "http://localhost:63342")
+@CrossOrigin(origins = "https://nlpextractor.netlify.app/")
 @RestController
 @RequestMapping("/api/v1")
 public class NERController {
