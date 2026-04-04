@@ -166,7 +166,7 @@ http://localhost:63342
 
 * Highlight entities in UI
 * Multi-entity detection (all types at once)
-* Medical NLP integration (Apache cTAKES / BioBERT)
+* Medical NLP integration (**Apache cTAKES** / BioBERT)
 * True-casing using ML models
 * Deployment (Render / AWS / Docker)
 
