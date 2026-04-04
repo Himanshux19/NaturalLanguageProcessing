@@ -259,7 +259,7 @@
         btnLabel.textContent = "Extracting…";
 
         try {
-            const res = await fetch(`http://localhost:8080/api/v1/ner?type=${type}`, {
+            const res = await fetch(`https://naturallanguageprocessing.onrender.com/api/v1/ner?type=${type}`, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain" },
                 body: text
